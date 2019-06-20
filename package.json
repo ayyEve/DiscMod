@@ -3,12 +3,30 @@
   "version": "1.0.0",
   "description": "Modular Discord.js Bot Framework",
   "main": "app.js",
-  "author": "Eve",
-  "license": "ISC",
+  "author": "ayyEve",
+  "license": "GPL-3.0",
   "dependencies": {
     "discord.js": "^11.5.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ayyEve/DiscMod.git"
+  },
   "devDependencies": {
     "@types/node": "^12.0.8"
-  }
+  },
+  "homepage": "https://github.com/ayyEve/DiscMod",
+  "bugs": {
+    "url": "https://github.com/ayyEve/DiscMod/issues"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "discord",
+    "framework"
+  ]
 }

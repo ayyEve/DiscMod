@@ -321,9 +321,6 @@ class Bot {
     // (in alphabetical order)
     // =======================
 
-
-
-
     /**
      * add a module to this bot
      * @param {Module} module The module to add
@@ -394,7 +391,6 @@ class Bot {
  * The DiscMod module
  * @module DiscMod
  */
-module.exports = {
-    Module: Module,
-    Bot: Bot
-}
+module.exports = Discord;
+module.exports.Module = Module;
+module.exports.Bot = Bot;
