@@ -80,8 +80,8 @@ class Module { // extends EventEmitter
 
     /**
      * Add your events here
-     * @param {String} event 
-     * @param {function(*):*} callback 
+     * @param {String} event The name of the event to watch for
+     * @param {function(*):*} callback The function to run when the even is triggered
      */
     on(event, callback) {
         // if (typeof event !== "string") {
@@ -109,15 +109,15 @@ class Module { // extends EventEmitter
 
 /**
  * This is the class you create when you want to make a bot
- * If you want to access the discord.js bot, use {@link Bot.bot}
+ * If you want to access the discord.js bot, use {@link Bot.bot}.
  */
 class Bot {
     /**
      * Bot Constructor
-     * @param {(Discord.ClientOptions|Discord.Client)} options Either a discord.js bot you already defined or the arguments you would pass to a normal discord.js bot
+     * @param {(Discord.ClientOptions|Discord.Client|string)} [options] Either a discord.js bot you already defined or the arguments you would pass to a normal discord.js bot (or the path to the modules)
      * @param {string} [modulePath="./modules"] the path to the modules
      */
-    constructor (options, modulePath=__dirname+"/modules") {
+    constructor (options, modulePath="/modules") {
         /**
          * the discord.js bot this uses
          * @type {Discord.Client}
@@ -130,12 +130,25 @@ class Bot {
          */ 
         this.modules = [];
 
-        // check if options is a discord bot
-        if (options instanceof Discord.Client) {
-            this.client = options;
+        if (options !== undefined) {
+            // check if options is a discord bot
+            if (options instanceof Discord.Client) {
+                this.client = options;
+
+            // check if its the path
+            } else if (typeof options == "string") {
+                //@ts-ignore
+                modulePath = options;
+                this.client = new Discord.Client();
+
+            // check if its an options object
+            } else {
+                this.client = new Discord.Client(options);
+            } 
         } else {
-            this.client = new Discord.Client(options);
-        }
+            this.client = new Discord.Client();
+        } 
+       
 
         // =============
         // load Modules
@@ -188,7 +201,6 @@ class Bot {
         }
 
     } // end constructor
-
 
     // =======================
     //        Getters
@@ -391,6 +403,8 @@ class Bot {
  * The DiscMod module
  * @module DiscMod
  */
-module.exports = Discord;
-module.exports.Module = Module;
-module.exports.Bot = Bot;
+module.exports = {
+    Discord: Discord,
+    Module: Module,
+    Bot: Bot
+};
