@@ -94,16 +94,10 @@ class Module { // extends EventEmitter
      * Called to emit an event
      * (tbh I should find a better way to pass arguments)
      * @param {string} event Event name
-     * @param {*=} arg0 Argument 0
-     * @param {*=} arg1 Argument 1
-     * @param {*=} arg2 Argument 2
-     * @param {*=} arg3 Argument 3
-     * @param {*=} arg4 Argument 4
-     * @param {*=} arg5 Argument 5
-     * @param {*=} arg6 Argument 6
+     * @param {...*=} args Arguments
      */
-    emit(event, arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
-        this.eventEmitter.emit(event, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+    emit(event, ...args) {
+        this.eventEmitter.emit(event, ...args);
     }
 }
 
@@ -350,33 +344,21 @@ class Bot {
      * Called to emit an event
      * (tbh I should find a better way to pass arguments)
      * @param {string} event Event name
-     * @param {*=} arg0 Argument 0
-     * @param {*=} arg1 Argument 1
-     * @param {*=} arg2 Argument 2
-     * @param {*=} arg3 Argument 3
-     * @param {*=} arg4 Argument 4
-     * @param {*=} arg5 Argument 5
-     * @param {*=} arg6 Argument 6
+     * @param {...*=} args Arguments
      */
-    emit (event, arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
-
+    emit (event, ...args) {
         // loop through events
-        for (let i = 0; i < this.modules.length; i++) {
-
-            // define module
-            const module = this.modules[i];
-
+        this.modules.map((module) => {
             // catch issues so we dont crash if theres an issue
             try {
-
                 // run the event in the module
-                module.emit(event, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+                module.emit(event, ...args);
             } catch (err) {
 
                 // log an error if any
                 console.error("Error running '" + event + "' in module '" + module.name + "': ", err);
             }
-        }
+        });
     }
 
     /**
