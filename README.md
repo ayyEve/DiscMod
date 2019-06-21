@@ -99,5 +99,5 @@ mod.on('command', (msg) => {
 ``` 
 
 # TODO
-1. add description and help properties to modules
+1. add description, help and enabled properties to modules  
 2. finish adding Discord.Client functions to DiscMod.Bot
