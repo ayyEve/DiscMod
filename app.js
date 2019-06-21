@@ -233,11 +233,7 @@ class Bot {
         const files = Fs.readdirSync(modulePath);
 
         // loop through all files
-        for (let i = 0; i < files.length; i++) {
-            
-            // define file
-            const file = files[i];
-
+        files.map(file => {
             // catch in case of faulty module
             try {
                 // load the file
@@ -253,7 +249,7 @@ class Bot {
                 // log the error
                 console.error("Error loading module \"" + file + "\"", err);
             }
-        } // end for
+        });
 
     } // end constructor
 
