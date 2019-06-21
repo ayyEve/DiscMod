@@ -4,6 +4,9 @@ DiscMod is a modular discord.js bot framework meant to streamline bot creation a
 I will be updating this page at some point, but for now if you want an example check out tests/testBot.js and tests/modules/exampleModule.js
 
 # How to Use
+To install:  
+```npm install discmod```
+
 Bot Creation:
 It's super easy to create a discord bot with both discord.js and DiscMod  
 Just import `discmod` and create a new `DiscMod.Bot`
