@@ -31,7 +31,7 @@ const events = [
     'guildMemberUpdate',
     'guildUnavailable',
     'guildUpdate',
-    'message',
+    // 'message', ignore this because we need our own
     'messageDelete',
     'messageDeleteBulk',
     'messageReactionAdd',
@@ -63,7 +63,7 @@ class Module { // extends EventEmitter
      * The Constructor
      * @param {string} name name of the command
      */
-    constructor(name) {
+    constructor (name) {
         console.log("setting up module \"" + name + "\"");
         /**
          * The name of the module
@@ -83,7 +83,7 @@ class Module { // extends EventEmitter
      * @param {String} event The name of the event to watch for
      * @param {function(*):*} callback The function to run when the even is triggered
      */
-    on(event, callback) {
+    on (event, callback) {
         // if (typeof event !== "string") {
         //     throw new Error("event is not a string!");
         // }
@@ -96,8 +96,36 @@ class Module { // extends EventEmitter
      * @param {string} event Event name
      * @param {...*=} args Arguments
      */
-    emit(event, ...args) {
+    emit (event, ...args) {
         this.eventEmitter.emit(event, ...args);
+    }
+
+    /**
+     * Add a command to the bot.
+     * Basically just an alias for Module.on('command', {callback}),
+     * with a check for name, and trims it out before calling the callback
+     * @param {string} [command] The name of the command (what to look for)
+     * @param {function(Discord.Message):*} callback The callback
+     */
+    addCommand(command, callback) {
+        return this.on('command', (msg) => {
+            if (!callback) {
+                // need to ignore this in case command is not specified
+                // but the linter throws a fit
+                //@ts-ignore
+                command(msg);
+            }
+
+            // check for name
+            if (msg.content.startsWith(command)) {
+
+                // remove the command from the start, and any spaces
+                msg.content = msg.content.substring(command.length).trim();
+
+                // run the callback
+                callback(msg);
+            }
+        });
     }
 }
 
@@ -142,8 +170,54 @@ class Bot {
         } else {
             this.client = new Discord.Client();
         } 
-       
 
+        /**
+         * The prefix for this bot
+         * @type {string}
+         */
+        this.prefix = "!";
+
+
+        // =============
+        // add Listeners
+        // =============
+
+        // add 'command' and 'message' emitter
+        this.client.on('message', msg => {
+            // ignore this bot always (might change to ignore bots too)
+            if (msg.author.id == this.user.id) return;
+            
+            // emit the message event
+            this.emit('message', msg);
+
+            // ignore self
+            // check for prefix
+            if (msg.content.startsWith(this.prefix)) {
+
+                // remove the prefix
+                msg.content = msg.content.substring(this.prefix.length);
+
+                // and emit
+                this.emit('command', msg);
+            }
+        });
+
+        // loop through all events
+        events.map(event => {
+            // and add the listener to the discord.js bot
+            this.client.on(event, (...args) => {
+                this.emit(event, ...args);
+            });
+        })
+
+
+        // add a simple listenter to the client, saying when its ready
+        this.client.on('ready', () => {
+            console.log(`Bot is ready with username ${this.user.username}`);
+        });
+
+
+        // might move this to a function so i can async and await it, so the 'ready' is more accurate
         // =============
         // load Modules
         // =============
@@ -152,11 +226,10 @@ class Bot {
         const dirExists = Fs.existsSync(modulePath);
 
         // check if directory exists
-        if (!dirExists) {
-            // throw an error if it doesnt, no point in continuing if folders dont even exist
-            throw new Error("Path to modules does not exist! (" + modulePath + ")");
-        }
+        // if it doesnt, dont bother loading anything
+        if (!dirExists) return;
 
+        // read files
         const files = Fs.readdirSync(modulePath);
 
         // loop through all files
@@ -180,19 +253,7 @@ class Bot {
                 // log the error
                 console.error("Error loading module \"" + file + "\"", err);
             }
-        } // end for i
-
-
-        // =============
-        // add Listeners
-        // =============
-
-        for (let i = 0; i < events.length; i++) {
-            const event = events[i];
-            this.client.on(event, (a0, a1, a2, a3, a4, a5, a6) => {
-                this.emit(event, a0, a1, a2, a3, a4, a5, a6);
-            });
-        }
+        } // end for
 
     } // end constructor
 
@@ -356,7 +417,7 @@ class Bot {
             } catch (err) {
 
                 // log an error if any
-                console.error("Error running '" + event + "' in module '" + module.name + "': ", err);
+                console.error(`Error running '${event}' in module '${module.name}':`, err);
             }
         });
     }
@@ -378,6 +439,18 @@ class Bot {
      */
     login (token) {
         this.client.login(token);
+    }
+
+    /**
+     * set the prefix for this bot
+     * @param {string} prefix The prefix to set
+     */
+    setPrefix(prefix) {
+        if (typeof prefix == 'string') {
+            this.prefix = prefix;
+        }  else {
+            console.log("trying to set non-string as a prefix!");
+        }
     }
 }
 
