@@ -12,6 +12,10 @@ Just import `discmod` and create a new `DiscMod.Bot`
 Don't forget to set the prefix with `Bot.setPrefix("prefix")`  
 And don't forget to `Bot.login("token")`!
 
+You can also use any event the `Discord.Client` has access to, 
+as well as functions (i added the most popular for now) and all properties  
+esentially the `DiscMod.Bot` can do everything a `Discord.Client` can
+
 Module Creation:  
 Creating a module is easy too!  
 import `discmod` like before, and create a new `DiscMod.Module`
