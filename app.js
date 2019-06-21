@@ -335,16 +335,10 @@ class Bot {
      * @param {...*=} args Arguments
      */
     emit (event, ...args) {
-
         // loop through events
-        for (let i = 0; i < this.modules.length; i++) {
-
-            // define module
-            const module = this.modules[i];
-
+        this.modules.map((module) => {
             // catch issues so we dont crash if theres an issue
             try {
-
                 // run the event in the module
                 module.emit(event, ...args);
             } catch (err) {
@@ -352,7 +346,7 @@ class Bot {
                 // log an error if any
                 console.error("Error running '" + event + "' in module '" + module.name + "': ", err);
             }
-        }
+        });
     }
 
     /**
