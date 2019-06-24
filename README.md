@@ -103,3 +103,4 @@ mod.on('command', (msg) => {
 2. finish adding Discord.Client functions to DiscMod.Bot  
 3. add dependencies properties to the module class  
 4. add 'ignoreDependencies' property to the bot class (and install mod dependencies if false)  
+5. change to only load .js files in the modules folder, and fix parent directory for the modules default folder)
