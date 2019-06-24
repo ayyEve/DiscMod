@@ -99,11 +99,9 @@ mod.on('command', (msg) => {
 ``` 
 
 # TODO
-1. add 'description', 'help' and 'enabled' properties to the module class (done, just need to implement them in the bot class)  
-2. add 'dependencies' property to the module class  
-3. add 'ignoreDependencies' property to the bot class (and install mod dependencies if false)  
-4. change to only load .js files in the modules folder, and fix parent directory for the modules default folder)  
-5. add `getModule` in the bot class, might be useful to some people  
+1. add 'description', 'help' and 'enabled' properties to the module class (done, just need to implement them in the bot class) 
+2. change to only load .js files in the modules folder, and fix parent directory for the modules default folder)  
+3. add `getModule` in the bot class, might be useful to some people  
  -- repo stuff  
-5. add more examples, showing off most of the features of the bot  
-6. make the wiki prettier  
+4. add more examples, showing off most of the features of the bot  
+5. make the wiki prettier  
