@@ -18,8 +18,7 @@ Just import `discmod` and create a new `DiscMod.Bot`
 Don't forget to set the prefix with `Bot.setPrefix("prefix")`  
 And don't forget to `Bot.login("token")`!
 
-You can also use any event the `Discord.Client` has access to, 
-as well as functions (i added the most popular for now) and all properties  
+You can also use any event the `Discord.Client` has access to, as well as functions and properties  
 esentially the `DiscMod.Bot` can do everything a `Discord.Client` can
 
 Module Creation:  
@@ -88,6 +87,12 @@ mod.on('command', (msg) => {
  mod.addCommand('ping', (msg) => {
      msg.channel.send('Pong!');
  });
+ 
+ // you can also set the help text for the module,
+ // which is what shows up in a help command
+ // supports markdown formatting since its essentially a discord message
+ // for the prefix, do /p, the bot will automatically replace it
+ mod.helpText = "`/pping` replies with `Pong!`";
  
  // dont forget to add the module to the bot
  // you dont need to do this if you have the modules
