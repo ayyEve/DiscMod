@@ -107,6 +107,8 @@ mod.on('command', (msg) => {
 1. add 'description', 'help' and 'enabled' properties to the module class (done, just need to implement them in the bot class) 
 2. change to only load .js files in the modules folder, and fix parent directory for the modules default folder)  
 3. add `getModule` in the bot class, might be useful to some people  
+4. be able to access the bot object from inside a module  
+5. add an api key system to the bot object, allowing keys to be in one place  
  -- repo stuff  
 4. add more examples, showing off most of the features of the bot  
 5. make the wiki prettier  
