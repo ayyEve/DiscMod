@@ -1,7 +1,7 @@
 //@ts-check
 
 const EventEmitter = require("events");
-const Fs           = require("fs");
+const fs           = require("fs");
 const Discord      = require('discord.js');
 
 // we need to define every event so we can add listeners to the discord.js client bot
@@ -41,6 +41,7 @@ const events = [
     'presenceUpdate',
     'rateLimit',
     'ready',
+    // module-ready // our own event fired once a bot has loaded a module, to signal when the module's bot property has been initialized
     'reconnecting',
     'resume',
     'roleCreate',
@@ -58,12 +59,14 @@ const events = [
 /**
  * The Module class, your module.exports should be this object
  */
-class Module { // extends EventEmitter
+class Module extends EventEmitter {
     /**
      * The Constructor
      * @param {string} name name of the command
      */
-    constructor (name) {
+    constructor(name) {
+        super();
+        
         console.log("setting up module \"" + name + "\"");
         /**
          * The name of the module
@@ -71,34 +74,59 @@ class Module { // extends EventEmitter
          */
         this.name = name;
 
+        // /**
+        //  * The event emitter for this object
+        //  * @type {EventEmitter}
+        //  */
+        // this.eventEmitter = new EventEmitter();
+
         /**
-         * The event emitter for this object
-         * @type {EventEmitter}
+         * The bot this module was loaded into
+         * - **Caution!** only available once the module-ready event has been fired!
+         * @type {Bot}
          */
-        this.eventEmitter = new EventEmitter();
+        this.bot = undefined;
+
+        // setup initialization
+        this.once('module-init', (bot) => {
+            this.bot = bot;
+            this.emit('module-ready');
+        });
     }
 
-    /**
-     * Add your events here
-     * @param {String} event The name of the event to watch for
-     * @param {function(*):*} callback The function to run when the even is triggered
-     */
-    on (event, callback) {
-        // if (typeof event !== "string") {
-        //     throw new Error("event is not a string!");
-        // }
-        this.eventEmitter.on(event, callback);
-    }
+    // /**
+    //  * Add your events here
+    //  * @param {String} event The name of the event to watch for
+    //  * @param {function(*):*} callback The function to run when the even is triggered
+    //  */
+    // on(event, callback) {
+    //     // if (typeof event !== "string") {
+    //     //     throw new Error("event is not a string!");
+    //     // }
+    //     callback.bind(this);
+    //     super.on(event, callback)
+    //     // this.eventEmitter.on(event, callback);
+    // }
 
-    /**
-     * Called to emit an event
-     * (tbh I should find a better way to pass arguments)
-     * @param {string} event Event name
-     * @param {...*=} args Arguments
-     */
-    emit (event, ...args) {
-        this.eventEmitter.emit(event, ...args);
-    }
+    // /**
+    //  * Add your one-time events here
+    //  * @param {String} event The name of the event to watch for
+    //  * @param {function(*):*} callback The function to run when the even is triggered
+    //  */
+    // once(event, callback) {
+    //     callback.bind(this);
+    //     this.eventEmitter.once(event, callback);
+    // }
+
+    // /**
+    //  * Called to emit an event
+    //  * (tbh I should find a better way to pass arguments)
+    //  * @param {string|symbol} event Event name
+    //  * @param {...*} args Arguments
+    //  */
+    // emit(event, ...args) {
+    //     this.eventEmitter.emit(event, ...args);
+    // }
 
     /**
      * Add a command to the bot.
@@ -139,7 +167,7 @@ class Bot {
      * @param {(Discord.ClientOptions|Discord.Client|string)} [options] Either a discord.js bot you already defined or the arguments you would pass to a normal discord.js bot (or the path to the modules)
      * @param {string} [modulePath="./modules"] the path to the modules
      */
-    constructor (options, modulePath="/modules") {
+    constructor(options, modulePath="/modules") {
         /**
          * the discord.js bot this uses
          * @type {Discord.Client}
@@ -148,7 +176,7 @@ class Bot {
 
         /**
          * The loaded modules
-         * @type {Module[]} 
+         * @type {Module[]}
          */ 
         this.modules = [];
 
@@ -156,7 +184,6 @@ class Bot {
             // check if options is a discord bot
             if (options instanceof Discord.Client) {
                 this.client = options;
-
             // check if its the path
             } else if (typeof options == "string") {
                 //@ts-ignore
@@ -176,7 +203,6 @@ class Bot {
          * @type {string}
          */
         this.prefix = "!";
-
 
         // =============
         // add Listeners
@@ -200,7 +226,7 @@ class Bot {
                 // and emit
                 this.emit('command', msg);
             }
-        });
+        }); 
 
         // loop through all events
         events.map(event => {
@@ -208,7 +234,7 @@ class Bot {
             this.client.on(event, (...args) => {
                 this.emit(event, ...args);
             });
-        })
+        });
 
 
         // add a simple listenter to the client, saying when its ready
@@ -223,29 +249,65 @@ class Bot {
         // =============
 
         // check directory
-        const dirExists = Fs.existsSync(modulePath);
-
+        const dirExists = fs.existsSync(modulePath);
+        
         // check if directory exists
-        // if it doesnt, dont bother loading anything
-        if (!dirExists) return;
+        if (!dirExists) {
+            // send an error message
+            console.log(`Modules folder not found! (${modulePath})`);
+
+            // dont bother loading anything
+            return;
+        }
 
         // read files
-        const files = Fs.readdirSync(modulePath);
+        const files = fs.readdirSync(modulePath);
 
         // loop through all files
-        files.map(file => {
-            // catch in case of faulty module
+        files.forEach(file => {
+            const path = modulePath + "/" + file;
+            const isDir = fs.lstatSync(path).isDirectory();
+
+            // try/catch in case of faulty module
             try {
+                // if the file is a directory, try loading a module.js file from it
+                if (isDir) {
+                    const innerPath = path + '/module.js';
+
+                    try {z
+                        if (fs.existsSync(innerPath)) {
+                            // load the file
+                            const mod = require(innerPath);
+
+                            if (!mod.name) {
+                                console.log(innerPath + ' is not a valid module! (did you forget module.exports?) ');
+                                return;
+                            }
+
+                            // and load the mod
+                            this.addModule(mod);
+                        }
+                    } catch (err) {
+                        console.error("Error loading module \"" + innerPath + "\"", err);
+                    }
+
+                    // continue checking other files (would be continue but this is in a .forEach method)
+                    return;
+                }
+
+                // check if it is a .js file, ignore otherwise
+                if (!path.endsWith('.js')) return;
+
                 // load the file
-                const mod = require(modulePath + "/" + file);
+                const mod = require(path);
 
-                // add it to the list
-                this.modules.push(mod);
+                if (!mod.name) {
+                    console.log(path + ' is not a valid module! (did you forget module.exports?) ');
+                    return;
+                }
 
-                // log it loaded correctly
-                console.log("Loaded " + mod.name);
+                this.addModule(mod);
             } catch (err) {
-
                 // log the error
                 console.error("Error loading module \"" + file + "\"", err);
             }
@@ -386,15 +448,21 @@ class Bot {
 
     /**
      * add a module to this bot
-     * @param {Module} module The module to add
+     * @param {Module} botModule The module to add
      */
-    addModule (module) {
+    addModule(botModule) {
         // since its already a module we dont need to worry about checking for errors,
         // just add it to the list
-        this.modules.push(module);
+        this.modules.push(botModule);
+
+        // set the module's bot property
+        botModule.bot = this;
+
+        // emit the module ready event
+        botModule.emit('module-init', this);
 
         // log it loaded correctly
-        console.log("Loaded " + module.name);
+        console.log("Loaded " + botModule.name);
     }
     
     /**
@@ -403,7 +471,7 @@ class Bot {
      * @param {string} event Event name
      * @param {...*=} args Arguments
      */
-    emit (event, ...args) {
+    emit(event, ...args) {
         // loop through events
         this.modules.map((module) => {
             // catch issues so we dont crash if theres an issue
@@ -424,8 +492,10 @@ class Bot {
      * @param {string} event The event name
      * @param {function(*):*} callback The callback for the event
      */
-    on (event, callback) {
-        console.log("It is recommended you use modules instead of directly adding events! (for event \"" + event +"\"");
+    on(event, callback) {
+        // if the event is not a ready event dont send a message
+        if (event!=='ready') 
+            console.log("It is recommended you use modules instead of directly adding events! (for event \"" + event +"\"");
         this.client.on(event, callback);
     }
 
@@ -433,7 +503,7 @@ class Bot {
      * login to discord
      * @param {string} token The token for the discord bot
      */
-    login (token) {
+    login(token) {
         this.client.login(token);
     }
 
