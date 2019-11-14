@@ -274,7 +274,7 @@ class Bot {
                 if (isDir) {
                     const innerPath = path + '/module.js';
 
-                    try {z
+                    try {
                         if (fs.existsSync(innerPath)) {
                             // load the file
                             const mod = require(innerPath);
